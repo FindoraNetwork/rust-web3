@@ -82,10 +82,8 @@ async fn send_transaction_with_confirmation_<T: Transport>(
         wait_for_confirmations(eth, eth_filter, poll_interval, confirmations, confirmation_check).await?;
     }
     // TODO #397: We should remove this `expect`. No matter what happens inside the node, this shouldn't be a panic.
-    let receipt = eth
-        .transaction_receipt(hash)
-        .await?
-        .expect("receipt can't be null after wait for confirmations; qed");
+    let receipt = eth.transaction_receipt(hash).await?.unwrap_or_default();
+    // .expect("receipt can't be null after wait for confirmations; qed");
     Ok(receipt)
 }
 
