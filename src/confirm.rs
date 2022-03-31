@@ -63,23 +63,24 @@ where
     }
 }
 
-async fn transaction_receipt_block_number_check<T: Transport>(eth: &Eth<T>, hash: H256) -> error::Result<Option<U64>> {
-    let receipt = eth.transaction_receipt(hash).await?;
-    Ok(receipt.and_then(|receipt| receipt.block_number))
-}
+// async fn transaction_receipt_block_number_check<T: Transport>(eth: &Eth<T>, hash: H256) -> error::Result<Option<U64>> {
+//     let receipt = eth.transaction_receipt(hash).await?;
+//     Ok(receipt.and_then(|receipt| receipt.block_number))
+// }
 
 async fn send_transaction_with_confirmation_<T: Transport>(
     hash: H256,
     transport: T,
-    poll_interval: Duration,
+    _poll_interval: Duration,
     confirmations: usize,
 ) -> error::Result<TransactionReceipt> {
     let eth = Eth::new(transport.clone());
     if confirmations > 0 {
-        let confirmation_check = || transaction_receipt_block_number_check(&eth, hash);
-        let eth_filter = EthFilter::new(transport.clone());
-        let eth = eth.clone();
-        wait_for_confirmations(eth, eth_filter, poll_interval, confirmations, confirmation_check).await?;
+        tokio::time::sleep(Duration::from_secs(confirmations as u64)).await;
+        // let confirmation_check = || transaction_receipt_block_number_check(&eth, hash);
+        // let eth_filter = EthFilter::new(transport.clone());
+        // let eth = eth.clone();
+        // wait_for_confirmations(eth, eth_filter, poll_interval, confirmations, confirmation_check).await?;
     }
     // TODO #397: We should remove this `expect`. No matter what happens inside the node, this shouldn't be a panic.
     let receipt = eth.transaction_receipt(hash).await?.unwrap_or_default();
